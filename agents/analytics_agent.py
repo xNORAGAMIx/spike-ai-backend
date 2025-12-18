@@ -1,26 +1,101 @@
+import json
+import re
 from llm.client import ask_llm
+from services.ga4_service import run_ga4_report
+
+# def extract_json(text: str):
+#     text = text.strip()
+
+#     # Remove markdown code fences like ```json or ```
+#     text = re.sub(r"```[a-zA-Z]*", "", text)
+#     text = text.replace("```", "").strip()
+
+#     # Now extract the first JSON object
+#     start = text.find("{")
+#     end = text.rfind("}")
+
+#     if start == -1 or end == -1:
+#         raise ValueError(f"No JSON object found in LLM response: {text}")
+
+#     json_str = text[start:end + 1]
+#     return json.loads(json_str)
+
+def parse_llm_json(text: str) -> dict:
+    if not text or not text.strip():
+        raise ValueError("LLM returned empty response")
+
+    # Remove markdown code blocks if present
+    text = re.sub(r"```json|```", "", text).strip()
+
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        raise ValueError(f"Invalid JSON from LLM: {text}")
 
 def build_ga4_plan(query: str) -> dict:
     system_prompt = """
-You are a Google Analytics 4 (GA4) expert.
+You are a Google Analytics 4 (GA4) query planner.
 
-Your task:
-Convert a natural-language analytics question into a GA4 reporting plan.
+You MUST return ONLY valid JSON.
+NO explanations.
+NO markdown.
+NO backticks.
+NO comments.
 
-Return STRICT JSON with:
-- metrics (array of GA4 metric names)
-- dimensions (array of GA4 dimension names)
-- date_range { start, end }
-- filters (optional)
-- order_by (optional)
+JSON schema:
+{
+  "metrics": ["string"],
+  "dimensions": ["string"],
+  "date_range": {
+    "start": "string",
+    "end": "string"
+  }
+}
 
-Rules:
-- Use valid GA4 metrics and dimensions
-- Use relative dates like "7daysAgo", "30daysAgo", "today"
-- Do NOT include explanations
-- Do NOT include markdown
+If unsure, still return valid JSON using best guess.
 """
 
     response = ask_llm(system_prompt, query)
+    return parse_llm_json(response)
 
-    return response # type: ignore
+
+def analytics_agent(query: str, property_id: str):
+    try:
+        plan = build_ga4_plan(query)
+    except Exception as e:
+        return {
+            "status": "error",
+            "stage": "planning",
+            "message": str(e)
+        }
+
+    try:
+        ga4_response = run_ga4_report(property_id, plan)
+    except Exception as e:
+        return {
+            "status": "error",
+            "stage": "execution",
+            "message": str(e)
+        }
+
+    return {
+        "status": "ok",
+        "plan": plan,
+        "rows": format_ga4_response(ga4_response)
+    }
+
+
+def format_ga4_response(response):
+    if not response.rows:
+        return []
+
+    rows = []
+    for row in response.rows:
+        row_data = {}
+        for i, dim in enumerate(response.dimension_headers):
+            row_data[dim.name] = row.dimension_values[i].value
+        for i, met in enumerate(response.metric_headers):
+            row_data[met.name] = row.metric_values[i].value
+        rows.append(row_data)
+
+    return rows

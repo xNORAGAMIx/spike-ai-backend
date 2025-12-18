@@ -1,5 +1,5 @@
-fastapi 
-uvicorn 
-pydantic 
+fastapi
+uvicorn
+pydantic
 openai
-
+google-analytics-data
