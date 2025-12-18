@@ -3,3 +3,4 @@ uvicorn
 pydantic
 openai
 google-analytics-data
+pandas
