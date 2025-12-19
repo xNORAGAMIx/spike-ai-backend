@@ -168,7 +168,7 @@ spike-ai-backend/
 │   └── sheets_service.py   # Live Google Sheets ingestion
 ├── llm/
 │   └── client.py            # LiteLLM client abstraction
-├── credentials.json         # GA4 service account (replaced by evaluators)
+├── credentials.json         # GA4 service account (needs to be replaced while setting up)
 ├── deploy.sh                # One‑command deployment
 ├── requirements.txt
 └── README.md
