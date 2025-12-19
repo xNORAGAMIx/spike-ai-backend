@@ -2,6 +2,16 @@ from google.analytics.data_v1beta import BetaAnalyticsDataClient # type: ignore
 from google.analytics.data_v1beta.types import RunReportRequest # type: ignore
 
 
+METRIC_ALIASES = {
+    "pageViews": "screenPageViews",
+    "pageviews": "screenPageViews",
+    "views": "screenPageViews",
+    "page_views": "screenPageViews",
+    "users": "totalUsers",
+    "userCount": "totalUsers",
+    "sessions": "sessions"
+}
+
 ALLOWED_METRICS = {
     "screenPageViews",
     "totalUsers",
@@ -22,10 +32,21 @@ def run_ga4_report(property_id: str, plan: dict):
         "credentials.json"
     )
 
-    metrics = [
-        {"name": m} for m in plan.get("metrics", [])
-        if m in ALLOWED_METRICS
-    ]
+    raw_metrics = plan.get("metrics", [])
+
+    normalized_metrics = []
+
+    for m in raw_metrics:
+        # Direct match
+        if m in ALLOWED_METRICS:
+            normalized_metrics.append({"name": m})
+
+        # Alias match
+        elif m in METRIC_ALIASES:
+            alias = METRIC_ALIASES[m]
+            if alias in ALLOWED_METRICS:
+                normalized_metrics.append({"name": alias})
+
 
     dimensions = [
         {"name": d} for d in plan.get("dimensions", [])
@@ -39,12 +60,14 @@ def run_ga4_report(property_id: str, plan: dict):
         "end_date": raw_range.get("end", "today")
     }
 
-    if not metrics:
-        raise ValueError("No valid GA4 metrics after validation")
+    if not normalized_metrics:
+        raise ValueError(
+            f"No valid GA4 metrics after validation. Requested: {raw_metrics}"
+        )
 
     request = RunReportRequest(
         property=f"properties/{property_id}",
-        metrics=metrics,
+        metrics=normalized_metrics,
         dimensions=dimensions,
         date_ranges=[date_range]
     )
