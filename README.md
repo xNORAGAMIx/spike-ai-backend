@@ -153,7 +153,7 @@ POST http://localhost:8080/query
 
 ---
 
-## 🗂 Project Structure
+## Project Structure
 
 ```
 spike-ai-backend/
@@ -200,7 +200,7 @@ Startup completes within the required time window.
 
 ---
 
-## 🔐 Credentials & Evaluation Safety
+## Credentials & Evaluation Safety
 
 * **`credentials.json` is loaded dynamically at runtime**
 * No GA4 credentials or `propertyId` values are hardcoded
@@ -213,7 +213,7 @@ No code changes are required for evaluation.
 
 ---
 
-## 🛡 Error Handling & Robustness
+## Error Handling & Robustness
 
 * Empty GA4 properties handled gracefully
 * Invalid LLM output safely parsed and validated
@@ -237,32 +237,3 @@ No code changes are required for evaluation.
 * SEO logic currently focuses on technical SEO attributes
 * No persistent storage (stateless by design)
 
-### High Level Flow
-
-Client (Evaluator / curl / Postman)
-        │
-        ▼
-POST /query  (FastAPI, Port 8080)
-        │
-        ▼
-Orchestrator (Central Brain)
-  ├─ Intent Detection (LLM)
-  ├─ Agent Routing
-  ├─ Task Coordination
-        │
-        ├───────────────┬────────────────┐
-        ▼               ▼                ▼
-Analytics Agent     SEO Agent        (Optional)
-(GA4)               (Screaming Frog) Explanation LLM
-        │               │
-        ▼               ▼
-GA4 Data API     Google Sheets (Live CSV)
-(Live Data)      (Live SEO Audit Data)
-        │               │
-        └───────┬───────┘
-                ▼
-        Fusion Layer (Code-driven)
-        │
-        ▼
-Final Structured Response
-(+ Natural-language Insight)
