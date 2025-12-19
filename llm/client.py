@@ -2,7 +2,7 @@ from openai import OpenAI
 import os
 
 client = OpenAI(
-    api_key=os.getenv(""),
+    api_key=os.getenv("sk-mAGfqCb_a82u-w8-lSkFvg"),
     base_url="http://3.110.18.218/"
 )
 
