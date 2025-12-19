@@ -83,3 +83,5 @@ def handle_query(query: str, property_id: str | None):
         "status": "error",
         "message": "Unknown intent"
     }
+
+# done

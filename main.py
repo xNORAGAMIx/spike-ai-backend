@@ -6,10 +6,12 @@ app = FastAPI()
 
 class QueryRequest(BaseModel):
     query: str
-    propertyId: str | None = None # optional for now
+    propertyId: str | None = None 
 
 # forwards to orchestrator 
 
 @app.post("/query")
 def query_endpoint(req: QueryRequest):
     return handle_query(req.query, req.propertyId)
+
+# done

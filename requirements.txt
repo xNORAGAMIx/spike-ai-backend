@@ -4,3 +4,4 @@ pydantic
 openai
 google-analytics-data
 pandas
+python-dotenv

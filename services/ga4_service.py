@@ -74,3 +74,5 @@ def run_ga4_report(property_id: str, plan: dict):
 
     response = client.run_report(request)
     return response
+
+# done

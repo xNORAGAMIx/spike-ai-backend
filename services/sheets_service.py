@@ -12,3 +12,5 @@ def load_seo_dataframe() -> pd.DataFrame:
     df = pd.read_csv(CSV_URL)
     df.columns = [c.strip().lower() for c in df.columns]
     return df
+
+# done

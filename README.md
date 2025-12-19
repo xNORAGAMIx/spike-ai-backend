@@ -168,7 +168,7 @@ spike-ai-backend/
 │   └── sheets_service.py   # Live Google Sheets ingestion
 ├── llm/
 │   └── client.py            # LiteLLM client abstraction
-├── credentials.json         # GA4 service account (needs to be replaced while setting up)
+├── credentials.json         # GA4 service account (loaded at runtime, not committed)
 ├── deploy.sh                # One‑command deployment
 ├── requirements.txt
 └── README.md
@@ -183,6 +183,17 @@ spike-ai-backend/
 * Python 3.10+
 * Internet access
 * LiteLLM API key
+
+### Environment Variables
+
+This project uses environment variables for all AI credentials.
+
+Create a .env file in the project root:
+
+OPENAI_API_KEY=your_litellm_or_llm_api_key_here
+
+
+This key is used by the LLM client (llm/client.py) to access the LiteLLM proxy (Google Gemini models).
 
 ### Run the Application
 
