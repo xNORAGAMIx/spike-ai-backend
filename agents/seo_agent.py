@@ -2,6 +2,7 @@ from services.sheets_service import load_seo_dataframe
 from llm.client import ask_llm
 import json
 import re
+import math
 
 def build_seo_plan(query: str, columns: list):
     system_prompt = f"""
@@ -74,11 +75,26 @@ def apply_seo_plan(df, plan):
 
         if agg["type"] == "percentage":
             total = len(df)
+
+            if total == 0 or len(filtered) == 0:
+                return {
+                    "percentage": 0.0,
+                    "note": "No matching rows found for the given condition"
+                }
             return {
                 "percentage": round((len(filtered) / total) * 100, 2)
             }
 
     return filtered.head(50).to_dict(orient="records")
+
+def clean_nan(obj):
+    if isinstance(obj, float) and math.isnan(obj):
+        return None
+    if isinstance(obj, dict):
+        return {k: clean_nan(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [clean_nan(v) for v in obj]
+    return obj
 
 def seo_agent(query: str):
     df = load_seo_dataframe()
@@ -87,7 +103,7 @@ def seo_agent(query: str):
     result = apply_seo_plan(df, plan)
 
     return {
-        "status": "ok",
-        "plan": plan,
-        "result": result
-    }
+    "status": "ok",
+    "plan": plan,
+    "result": clean_nan(result)
+}
