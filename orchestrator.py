@@ -17,7 +17,7 @@ def handle_query(query: str, property_id: str | None):
             }
         return analytics_agent(query, property_id)
 
-    # 🔥 NEW PART (Tier-3)
+    # Tier 3
     if intent == "analytics_seo":
         if not property_id:
             return {
@@ -36,7 +36,17 @@ def handle_query(query: str, property_id: str | None):
             seo_result.get("result", [])
         )
 
-        # JSON-only evaluator trick
+        if not fused:
+            return {
+                "status": "ok",
+                "data": [],
+                "explanation": (
+                    "There is insufficient GA4 traffic data for the selected period "
+                    "to identify highly visited pages. Therefore, a comparison between "
+                    "traffic and SEO quality cannot be made at this time."
+                )
+            }
+        
         if "json" in query.lower():
             return {
                 "status": "ok",
@@ -44,16 +54,23 @@ def handle_query(query: str, property_id: str | None):
             }
 
         explanation = ask_llm(
-            system_prompt="You explain combined analytics and SEO insights.",
+            system_prompt="""
+        You are a data analyst.
+
+        Rules:
+        - Base your explanation ONLY on the provided data
+        - Do NOT introduce new metrics or tools
+        - Do NOT give hypothetical advice
+        - If data is limited, acknowledge limitations briefly
+        - Keep the explanation under 3 sentences
+        """,
             user_prompt=f"""
-User question:
-{query}
+        User question:
+        {query}
 
-Combined data:
-{fused}
-
-Explain key insights and any SEO risks.
-"""
+        Combined analytics + SEO data:
+        {fused}
+        """
         )
 
         return {
